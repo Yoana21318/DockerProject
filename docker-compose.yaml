@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: backend
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/cars
+    ports:
+      - "3000:3000"
+    command: ["node", "server.js"]   # your Express app file
+
+  seeder:
+    build: ./backend
+    container_name: seeder
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/cars
+    command: ["node", "insert.js"]
+    restart: "no"
+
+volumes:
+  mongo-data:
